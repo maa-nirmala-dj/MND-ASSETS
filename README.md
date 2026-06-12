@@ -37,15 +37,24 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; outline: none; }
-        body, html { width: 100%; height: 100dvh; background: var(--bg-base); color: var(--text-main); overflow: hidden; display: flex; flex-direction: column; align-items: center; }
+        
+        /* 
+         * PERFECT SCROLLING ENGINE 
+         * Body is rigidly fixed. Only the view-container scrolls.
+         */
+        body, html { 
+            width: 100%; height: 100%; margin: 0; padding: 0; 
+            background: var(--bg-base); color: var(--text-main); 
+            overflow: hidden; position: fixed; inset: 0;
+        }
 
         .bg-mesh {
-            position: fixed; inset: 0; z-index: -2; opacity: 0.35;
+            position: absolute; inset: 0; z-index: -2; opacity: 0.35;
             background-image: radial-gradient(circle at 10% 20%, var(--primary-glow) 0%, transparent 45%), radial-gradient(circle at 90% 80%, var(--accent-glow) 0%, transparent 45%);
             animation: pulseBg 12s infinite alternate ease-in-out;
         }
         .grid-overlay {
-            position: fixed; inset: 0; z-index: -1; opacity: 0.03;
+            position: absolute; inset: 0; z-index: -1; opacity: 0.03;
             background-image: linear-gradient(var(--text-main) 1px, transparent 1px), linear-gradient(90deg, var(--text-main) 1px, transparent 1px);
             background-size: 35px 35px; mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
             -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
@@ -54,7 +63,7 @@
 
         /* Navigation */
         .top-nav {
-            position: fixed; top: 0; left: 0; width: 100%; height: var(--nav-height);
+            position: absolute; top: 0; left: 0; width: 100%; height: var(--nav-height);
             background: var(--bg-nav); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             border-bottom: 1px solid var(--border-light); z-index: 1000;
             display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
@@ -67,7 +76,7 @@
         .nav-btn:hover { background: var(--primary-glow); border-color: var(--primary); color: #fff; transform: translateY(-2px); }
 
         .bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: var(--bottom-nav-height);
+            position: absolute; bottom: 0; left: 0; width: 100%; height: var(--bottom-nav-height);
             background: var(--bg-nav); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             border-top: 1px solid var(--border-light); z-index: 1000;
             display: flex; justify-content: space-around; align-items: center; padding: 0 5px; padding-bottom: env(safe-area-inset-bottom);
@@ -80,22 +89,25 @@
         .b-nav-item.active { color: var(--accent); }
         .b-nav-item.active i { transform: translateY(-4px); filter: drop-shadow(0 0 12px var(--accent-glow)); }
 
-        /* Views */
-        .view-wrapper { width: 100%; height: 100%; overflow: hidden; position: relative; }
+        /* Views Structure */
+        .view-wrapper { position: absolute; inset: 0; overflow: hidden; z-index: 1; }
         .view-container { 
-            display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; max-width: 650px; margin: 0 auto;
-            padding: calc(var(--nav-height) + 20px) 15px calc(var(--bottom-nav-height) + 20px);
-            animation: fadeSlideUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch;
+            display: none; width: 100%; height: 100%; max-width: 650px; margin: 0 auto;
+            padding: calc(var(--nav-height) + 20px) 15px calc(var(--bottom-nav-height) + 20px) 15px;
+            overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch;
+            animation: fadeSlideUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
         }
-        #view-auth.active-view { padding: 40px 20px !important; justify-content: center; }
-        .active-view { display: flex !important; }
-        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(25px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .active-view { display: block !important; }
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(25px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Flex Wrapper for Centering Content inside scrolling view */
+        .flex-center-wrapper { display: flex; flex-direction: column; justify-content: center; min-height: 100%; padding-bottom: 20px; }
 
         /* Premium Cards */
         .glass-card {
             width: 100%; background: var(--bg-card); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
             border: 1px solid var(--border-light); border-radius: 20px; padding: 20px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255,255,255,0.05); margin-bottom: 20px; flex-shrink: 0;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255,255,255,0.05); margin-bottom: 20px;
         }
         .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255,255,255,0.15); padding-bottom: 12px; margin-bottom: 15px; }
         .section-title { font-family: 'Space Grotesk'; font-size: 16px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 10px; margin: 0; }
@@ -209,87 +221,97 @@
         .action-sheet-btn:hover { background: rgba(0, 229, 255, 0.1); border-color: var(--accent); color: var(--accent); transform: translateX(5px); }
 
         /* =========================================================================
-           ADVANCED A4 PRINT & PDF GENERATION ENGINE (NEW CLEAN DESIGN)
+           ADVANCED A4 PRINT & PDF GENERATION ENGINE (PREMIUM MATCH)
            ========================================================================= */
         #print-area {
-            display: none; background: #fff; color: #000; width: 210mm; min-height: 297mm; max-height: 297mm;
-            padding: 10mm; box-sizing: border-box; font-family: 'Outfit', sans-serif; position: relative; overflow: hidden;
+            display: none; background: #fff; color: #111827; width: 210mm; min-height: 297mm; max-height: 297mm;
+            padding: 8mm; box-sizing: border-box; font-family: 'Outfit', sans-serif; position: relative; overflow: hidden;
         }
         
         .print-border-wrapper {
-            border: 2px solid #1e293b; border-radius: 12px; height: 100%; width: 100%; padding: 25px;
+            border: 2px solid #111827; border-radius: 16px; height: 100%; width: 100%; padding: 8mm;
             display: flex; flex-direction: column; position: relative; box-sizing: border-box;
         }
 
+        /* Decorative Corners */
+        .print-corner-tl { position: absolute; top: 0; left: 0; width: 40mm; height: 40mm; background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); border-radius: 14px 0 100% 0; z-index: 0; }
+        .print-corner-tl::after { content:''; position:absolute; top:5px; left:5px; width:35mm; height:35mm; border-right: 2px solid #D4AF37; border-bottom: 2px solid #D4AF37; border-radius: 10px 0 100% 0; }
+        .print-corner-br { position: absolute; bottom: 0; left: 0; width: 100%; height: 25mm; background: #1e3a8a; border-radius: 0 0 14px 14px; z-index: 0; clip-path: polygon(0 100%, 100% 100%, 100% 0, 40% 100%); }
+        .print-corner-br::before { content:''; position: absolute; bottom: 0; left: 0; width: 100%; height: 30mm; background: #0f172a; z-index: -1; clip-path: polygon(0 100%, 100% 100%, 100% 0, 30% 100%); }
+
         /* Header */
-        .print-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-        .print-logo img { max-height: 65px; object-fit: contain; }
+        .print-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4mm; position: relative; z-index: 2; }
+        .print-logo { width: 40mm; background: #fff; padding: 5px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .print-logo img { width: 100%; height: auto; object-fit: contain; }
         .print-company-info { text-align: right; }
-        .print-company-info h1 { font-family: 'Cinzel', serif; color: #0f1f38; font-size: 24px; margin: 0 0 5px 0; font-weight: 900; letter-spacing: 1px; }
-        .print-company-info p { font-size: 10px; margin: 2px 0; color: #333; font-weight: 500; }
-        .print-divider-thick { width: 100%; height: 2px; background: #1e293b; margin-bottom: 20px; }
+        .print-company-info h1 { font-family: 'Cinzel', serif; color: #0f172a; font-size: 20px; margin: 0 0 3px 0; font-weight: 900; letter-spacing: 0.5px; }
+        .print-company-info p { font-size: 9px; margin: 2px 0; color: #374151; font-weight: 500; }
+        .print-divider-thick { width: 100%; height: 2px; background: #111827; margin-bottom: 5mm; position: relative; z-index: 2; }
 
         /* Meta Row */
         .print-meta-bar {
-            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 20px;
-            display: flex; justify-content: space-between; font-size: 12px; color: #333; margin-bottom: 25px;
+            background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px 15px;
+            display: flex; justify-content: space-between; font-size: 10px; color: #374151; margin-bottom: 6mm; position: relative; z-index: 2;
         }
-        .print-meta-bar strong { color: #0f1f38; font-family: 'Space Grotesk'; }
+        .print-meta-bar strong { color: #111827; font-family: 'Space Grotesk'; font-size: 11px; }
 
         /* Client Details */
-        .print-section-title { font-family: 'Outfit'; font-weight: 800; font-size: 15px; color: #0f1f38; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .print-client-grid { display: flex; gap: 40px; margin-bottom: 25px; padding: 0 10px; }
-        .client-col { flex: 1; display: flex; flex-direction: column; gap: 15px; }
-        .client-field { display: flex; align-items: flex-start; gap: 12px; }
-        .client-icon { width: 30px; height: 30px; border-radius: 50%; background: #f1f5f9; display: flex; justify-content: center; align-items: center; color: #0f1f38; font-size: 14px; flex-shrink: 0; }
+        .print-section-wrap { position: relative; margin-bottom: 5mm; z-index: 2; }
+        .print-section-line { position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background: #e5e7eb; z-index: 1; }
+        .print-section-title { position: relative; z-index: 2; background: #1e3a8a; color: #fff; padding: 6px 15px; border-radius: 20px; display: inline-block; font-family: 'Space Grotesk'; font-weight: bold; font-size: 11px; letter-spacing: 0.5px; }
+        
+        .print-client-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm 10mm; margin-bottom: 6mm; padding: 0 5mm; position: relative; z-index: 2; }
+        .client-field { display: flex; align-items: flex-start; gap: 8px; }
+        .client-icon { width: 24px; height: 24px; border-radius: 50%; background: #f3f4f6; display: flex; justify-content: center; align-items: center; color: #1e3a8a; font-size: 11px; flex-shrink: 0; }
         .client-text-box { display: flex; flex-direction: column; }
-        .client-text-box .label { font-size: 10px; color: #64748b; margin-bottom: 2px; }
-        .client-text-box .value { font-size: 14px; color: #0f1f38; font-weight: 700; }
-        .client-text-box .value.pin { color: #dc2626; font-family: 'Orbitron', monospace; letter-spacing: 2px; font-size: 15px; }
+        .client-text-box .label { font-size: 8px; color: #6b7280; margin-bottom: 1px; text-transform: uppercase; }
+        .client-text-box .value { font-size: 11px; color: #111827; font-weight: 700; }
+        .client-text-box .value.pin { color: #dc2626; font-family: 'Orbitron', monospace; letter-spacing: 2px; font-size: 13px; }
 
         /* Table */
-        .print-table-container { position: relative; margin-bottom: 25px; flex-grow: 1; }
-        .print-watermark { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; font-family: 'Cinzel'; font-size: 65px; color: rgba(15, 31, 56, 0.03); z-index: 0; pointer-events: none; transform: rotate(-15deg); font-weight: 900; }
-        .print-table-new { width: 100%; border-collapse: collapse; position: relative; z-index: 1; border: 1px solid #e2e8f0; }
-        .print-table-new th { background: #0f1f38; color: #fff; padding: 12px; font-size: 11px; text-align: left; text-transform: uppercase; letter-spacing: 0.5px; border-right: 1px solid #1e293b; }
+        .print-table-container { position: relative; margin-bottom: 5mm; flex-grow: 1; z-index: 2; }
+        .print-watermark { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; font-family: 'Cinzel'; font-size: 55px; color: rgba(15, 23, 42, 0.03); z-index: 0; pointer-events: none; transform: rotate(-15deg); font-weight: 900; white-space: nowrap; }
+        .print-table-new { width: 100%; border-collapse: collapse; position: relative; z-index: 1; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+        .print-table-new th { background: #0f172a; color: #fff; padding: 8px 10px; font-size: 9px; text-align: left; text-transform: uppercase; letter-spacing: 0.5px; border-right: 1px solid #334155; }
         .print-table-new th:last-child { border-right: none; }
-        .print-table-new td { padding: 14px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; font-weight: 600; color: #1e293b; border-right: 1px solid #e2e8f0; }
+        .print-table-new td { padding: 8px 10px; border-bottom: 1px solid #e5e7eb; font-size: 11px; font-weight: 600; color: #1f2937; border-right: 1px solid #e5e7eb; background: #fff; }
         .print-table-new td:last-child { border-right: none; }
-        .print-table-new th:last-child, .print-table-new td:last-child, .print-table-new th:first-child, .print-table-new td:first-child { text-align: center; }
-        .asset-desc-flex { display: flex; align-items: center; gap: 12px; }
-        .asset-table-icon { width: 30px; height: 30px; border-radius: 6px; background: #0f1f38; color: #fff; display: flex; justify-content: center; align-items: center; font-size: 14px; }
+        .print-table-new th:first-child, .print-table-new td:first-child { text-align: center; width: 12%; }
+        .print-table-new th:last-child, .print-table-new td:last-child { text-align: center; width: 25%; }
+        .asset-desc-flex { display: flex; align-items: center; gap: 8px; }
+        .asset-table-icon { width: 22px; height: 22px; border-radius: 5px; background: #0f172a; color: #fff; display: flex; justify-content: center; align-items: center; font-size: 10px; }
 
         /* Instructions & QR */
-        .print-bottom-section { display: flex; gap: 15px; margin-bottom: 20px; align-items: stretch; }
-        .print-instructions-box { flex: 1; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 15px; }
-        .print-instructions-box h4 { color: #d97706; margin: 0 0 10px 0; font-size: 13px; display: flex; align-items: center; gap: 6px; font-family: 'Space Grotesk'; text-transform: uppercase; }
-        .print-instructions-box ul { margin: 0; padding-left: 20px; font-size: 11px; color: #451a03; line-height: 1.6; font-weight: 500; }
+        .print-bottom-section { display: flex; gap: 10mm; margin-bottom: 5mm; align-items: stretch; position: relative; z-index: 2; }
+        .print-instructions-box { flex: 1; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 10px 15px; }
+        .print-instructions-box h4 { color: #d97706; margin: 0 0 6px 0; font-size: 11px; display: flex; align-items: center; gap: 6px; font-family: 'Space Grotesk'; text-transform: uppercase; }
+        .print-instructions-box ul { margin: 0; padding-left: 15px; font-size: 9px; color: #92400e; line-height: 1.5; font-weight: 500; }
         
-        .print-qr-container { display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; width: 140px; }
-        .print-qr-container img { width: 100px; height: 100px; margin-bottom: 8px; }
-        .print-qr-container span { font-size: 9px; color: #64748b; font-weight: bold; text-transform: uppercase; text-align: center; }
+        .print-qr-container { display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 5px; width: 35mm; }
+        .print-qr-container img { width: 25mm; height: 25mm; margin-bottom: 4px; }
+        .print-qr-container span { font-size: 7px; color: #6b7280; font-weight: bold; text-transform: uppercase; text-align: center; line-height: 1.1; }
 
         /* Footer */
-        .print-absolute-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; padding-top: 10px; }
-        .sys-gen-text { font-size: 9px; color: #94a3b8; line-height: 1.4; font-style: italic; }
-        .signatures { display: flex; align-items: center; gap: 30px; }
+        .print-absolute-footer { display: flex; justify-content: space-between; align-items: flex-end; position: relative; z-index: 2; margin-top: auto; }
+        .sys-gen-text { font-size: 7px; color: #fff; line-height: 1.4; font-style: italic; margin-bottom: 2mm; }
+        .signatures { display: flex; align-items: center; gap: 20px; background: #fff; padding: 10px; border-radius: 12px; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
         
-        .print-stamp { width: 90px; height: 90px; border: 3px solid #dc2626; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #dc2626; transform: rotate(-15deg); background: radial-gradient(circle, transparent 40%, rgba(239,68,68,0.05) 100%); }
-        .stamp-inner { border: 1px dashed #dc2626; border-radius: 50%; width: 75px; height: 75px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .stamp-t1 { font-size: 9px; font-weight: 900; letter-spacing: 0.5px; text-align: center; line-height: 1.1; }
-        .stamp-t2 { font-size: 12px; font-weight: 900; margin: 2px 0; letter-spacing: 1px; }
-        .stamp-t3 { font-size: 8px; font-weight: bold; }
+        .print-stamp { width: 25mm; height: 25mm; border: 2px solid #dc2626; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #dc2626; transform: rotate(-15deg); background: #fff; }
+        .stamp-inner { border: 1px dashed #dc2626; border-radius: 50%; width: 21mm; height: 21mm; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .stamp-t1 { font-size: 6px; font-weight: 900; letter-spacing: 0.5px; line-height: 1.1; }
+        .stamp-t2 { font-size: 9px; font-weight: 900; margin: 1px 0; letter-spacing: 1px; }
+        .stamp-t3 { font-size: 6px; font-weight: bold; }
 
-        .print-sig-box { text-align: center; width: 160px; margin-bottom: 5px; }
-        .sig-text { font-family: 'Dancing Script', cursive; font-size: 38px; color: #1e3a8a; line-height: 0.8; transform: rotate(-5deg); margin-bottom: 5px; }
-        .sig-line { width: 100%; height: 1px; background: #0f1f38; margin: 5px 0; }
-        .sig-title { font-size: 10px; font-weight: bold; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+        .print-sig-box { text-align: center; width: 40mm; }
+        .sig-text { font-family: 'Dancing Script', cursive; font-size: 26px; color: #1e3a8a; line-height: 0.8; transform: rotate(-5deg); margin-bottom: 4px; }
+        .sig-line { width: 100%; height: 1px; background: #0f172a; margin: 4px 0; }
+        .sig-title { font-size: 8px; font-weight: bold; color: #4b5563; text-transform: uppercase; letter-spacing: 1px; }
 
         /* Print Media Query */
         @media print {
             @page { size: A4; margin: 0; }
             body * { visibility: hidden; }
-            body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
+            body { background: #fff !important; margin: 0 !important; padding: 0 !important; position: static; overflow: visible; }
             #print-area { display: block !important; visibility: visible; position: absolute; left: 0; top: 0; page-break-inside: avoid; }
             #print-area * { visibility: visible; }
         }
@@ -314,27 +336,29 @@
         
         <!-- VIEW 1: AUTHENTICATION -->
         <div id="view-auth" class="view-container active-view">
-            <div class="glass-card" style="border-color: var(--primary); box-shadow: 0 20px 60px rgba(0,0,0,0.8); padding: 40px 25px;">
-                <div style="text-align: center; margin-bottom: 35px;">
-                    <div style="width: 80px; height: 80px; background: rgba(79, 70, 229, 0.15); border-radius: 24px; display: inline-flex; justify-content: center; align-items: center; margin-bottom: 20px; border: 1px solid rgba(79, 70, 229, 0.4); box-shadow: 0 10px 25px var(--primary-glow);">
-                        <i class="fas fa-boxes" style="font-size: 38px; color: var(--primary);"></i>
+            <div class="flex-center-wrapper">
+                <div class="glass-card" style="border-color: var(--primary); box-shadow: 0 20px 60px rgba(0,0,0,0.8); padding: 40px 25px;">
+                    <div style="text-align: center; margin-bottom: 35px;">
+                        <div style="width: 80px; height: 80px; background: rgba(79, 70, 229, 0.15); border-radius: 24px; display: inline-flex; justify-content: center; align-items: center; margin-bottom: 20px; border: 1px solid rgba(79, 70, 229, 0.4); box-shadow: 0 10px 25px var(--primary-glow);">
+                            <i class="fas fa-boxes" style="font-size: 38px; color: var(--primary);"></i>
+                        </div>
+                        <h2 style="font-family: 'Space Grotesk'; font-size: 26px; font-weight: 900; color: #fff; letter-spacing: 1px;">Logistics Hub</h2>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-top: 8px;">Unified Inventory & Asset Tracker</p>
                     </div>
-                    <h2 style="font-family: 'Space Grotesk'; font-size: 26px; font-weight: 900; color: #fff; letter-spacing: 1px;">Logistics Hub</h2>
-                    <p style="font-size: 13px; color: var(--text-muted); margin-top: 8px;">Unified Inventory & Asset Tracker</p>
-                </div>
 
-                <div class="input-group">
-                    <i class="fas fa-id-badge input-icon"></i>
-                    <input type="tel" id="login-phone" class="mn-input" placeholder="Registration ID (Mobile)" autocomplete="off">
+                    <div class="input-group">
+                        <i class="fas fa-id-badge input-icon"></i>
+                        <input type="tel" id="login-phone" class="mn-input" placeholder="Registration ID (Mobile)" autocomplete="off">
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="login-pin" class="mn-input pin-input" placeholder="6 DIGIT PIN" maxlength="6" autocomplete="off">
+                    </div>
+                    
+                    <button class="mn-btn btn-primary" onclick="processAuth()" id="btn-login" style="margin-top: 15px;">
+                        <i class="fas fa-fingerprint"></i> SECURE LOGIN
+                    </button>
+                    <div style="text-align: center; margin-top: 25px; font-size: 11px; color: rgba(255,255,255,0.4); font-family: 'Cinzel'; letter-spacing: 2px;">POWERED BY MAA NIRMALA DJ</div>
                 </div>
-                <div class="input-group">
-                    <input type="password" id="login-pin" class="mn-input pin-input" placeholder="6 DIGIT PIN" maxlength="6" autocomplete="off">
-                </div>
-                
-                <button class="mn-btn btn-primary" onclick="processAuth()" id="btn-login" style="margin-top: 15px;">
-                    <i class="fas fa-fingerprint"></i> SECURE LOGIN
-                </button>
-                <div style="text-align: center; margin-top: 25px; font-size: 11px; color: rgba(255,255,255,0.4); font-family: 'Cinzel'; letter-spacing: 2px;">POWERED BY MAA NIRMALA DJ</div>
             </div>
         </div>
 
@@ -345,10 +369,10 @@
                     <h2 style="font-family: 'Cinzel'; font-size: 20px; color: #fff; margin-bottom: 4px;">Admin Dashboard</h2>
                     <span style="font-size: 12px; color: var(--accent);">Asset Allocation Hub</span>
                 </div>
-                <button class="mn-btn btn-success" style="width: auto; padding: 10px 15px; font-size: 10px;" onclick="viewAdminDonations()"><i class="fas fa-hand-holding-heart"></i> VIEW DONATIONS</button>
+                <button class="mn-btn btn-success" style="width: auto; padding: 10px 15px; font-size: 10px;" onclick="showToast('Donation viewer synced to MND Pay', 'success')"><i class="fas fa-hand-holding-heart"></i> VIEW DONATIONS</button>
             </div>
 
-            <div class="glass-card flex-grow">
+            <div class="glass-card flex-grow" style="margin-bottom: 0;">
                 <div class="card-header" style="border-bottom: none;">
                     <div class="section-title"><i class="fas fa-users" style="color: var(--accent);"></i> Client Directory</div>
                 </div>
@@ -384,13 +408,13 @@
                 </button>
             </div>
 
-            <div class="glass-card" style="border-top: 4px solid var(--accent);">
+            <div class="glass-card" style="border-top: 4px solid var(--accent); margin-bottom: 0;">
                 <div class="card-header">
                     <div class="section-title"><i class="fas fa-box-open" style="color: var(--accent);"></i> Manage Assets</div>
                 </div>
                 
                 <div class="input-group" style="margin-bottom: 15px;">
-                    <i class="fas fa-filter input-icon" style="color: #888;"></i>
+                    <i class="fas fa-search input-icon" style="color: #888;"></i>
                     <input type="text" id="asset-search-input" class="mn-input" placeholder="Search specific asset (e.g. Drum)..." onkeyup="filterAssets()" style="padding: 12px 12px 12px 45px; font-size: 13px; border-radius: 10px;">
                 </div>
 
@@ -418,7 +442,7 @@
                 </div>
                 <i class="fas fa-comments" style="color: var(--success); font-size: 24px;"></i>
             </div>
-            <div class="glass-card flex-grow">
+            <div class="glass-card flex-grow" style="margin-bottom: 0;">
                 <div class="card-header" style="border-bottom: none;">
                     <div class="section-title"><i class="fas fa-headset" style="color: var(--success);"></i> Active Clients</div>
                 </div>
@@ -449,23 +473,7 @@
             </div>
         </div>
 
-        <!-- VIEW 6: ADMIN DONATIONS (New) -->
-        <div id="view-admin-donations" class="view-container">
-            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: rgba(255, 51, 51, 0.1); padding: 18px 20px; border-radius: 16px; border: 1px solid rgba(255, 51, 51, 0.3);">
-                <div>
-                    <h2 style="font-family: 'Cinzel'; font-size: 20px; color: var(--danger); margin-bottom: 4px;">Donation Logs</h2>
-                    <span style="font-size: 12px; color: #fff;">Global Contributions</span>
-                </div>
-                <button class="nav-btn" onclick="switchView('view-admin-directory')"><i class="fas fa-arrow-left"></i></button>
-            </div>
-            <div class="glass-card flex-grow">
-                <div class="data-list" id="admin-donations-list">
-                    <div style="text-align:center; padding: 30px; color: #666; font-size: 14px;"><i class="fas fa-circle-notch fa-spin"></i> Loading donations...</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- VIEW 7: CLIENT HOME -->
+        <!-- VIEW 6: CLIENT HOME -->
         <div id="view-client-home" class="view-container">
             <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: rgba(79, 70, 229, 0.1); padding: 18px 20px; border-radius: 16px; border: 1px solid rgba(79, 70, 229, 0.2);">
                 <div style="overflow: hidden;">
@@ -494,18 +502,18 @@
             </div>
 
             <!-- Donate Box -->
-            <div class="glass-card" style="border-color: rgba(255, 51, 51, 0.3); background: rgba(255, 51, 51, 0.05); padding: 15px;">
+            <div class="glass-card" style="border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.05); padding: 15px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <h3 style="font-family: 'Space Grotesk'; font-size: 14px; color: var(--danger);"><i class="fas fa-heart"></i> Helpful Donations</h3>
+                    <h3 style="font-family: 'Space Grotesk'; font-size: 14px; color: var(--success);"><i class="fas fa-heart"></i> Helpful Donations</h3>
                 </div>
                 <div style="display:flex; gap:10px;">
-                    <input type="number" id="donate-amount" class="mn-input" style="padding:10px; font-size:14px; border-color:var(--danger);" placeholder="Amount (₹)">
-                    <button class="mn-btn btn-danger" style="width:auto; padding:10px 20px; font-size:12px;" onclick="initiateDonation()">DONATE</button>
+                    <input type="number" id="donate-amount" class="mn-input" style="padding:10px; font-size:14px; border-color:var(--success);" placeholder="Amount (₹)">
+                    <button class="mn-btn btn-success" style="width:auto; padding:10px 20px; font-size:12px;" onclick="initiateDonation()">DONATE</button>
                 </div>
             </div>
 
             <!-- Assets List View -->
-            <div class="glass-card" style="border-top: 4px solid var(--primary); padding-bottom: 20px;">
+            <div class="glass-card" style="border-top: 4px solid var(--primary); padding-bottom: 20px; margin-bottom: 0;">
                 <div class="card-header" style="border-bottom: none; padding-bottom: 0;">
                     <div class="section-title"><i class="fas fa-clipboard-list" style="color: var(--primary);"></i> Assigned Assets Overview</div>
                 </div>
@@ -515,9 +523,9 @@
             </div>
         </div>
 
-        <!-- VIEW 8: CLIENT ASSETS GRID -->
+        <!-- VIEW 7: CLIENT ASSETS GRID -->
         <div id="view-client-assets" class="view-container">
-            <div class="glass-card flex-grow" style="border-top: 4px solid var(--accent);">
+            <div class="glass-card flex-grow" style="border-top: 4px solid var(--accent); margin-bottom: 0;">
                 <div class="card-header" style="border-bottom: none; padding-bottom: 0;">
                     <div class="section-title"><i class="fas fa-cubes" style="color: var(--accent);"></i> Detailed Visual Grid</div>
                 </div>
@@ -532,7 +540,7 @@
             </div>
         </div>
 
-        <!-- VIEW 9: CLIENT HELP (Chat) -->
+        <!-- VIEW 8: CLIENT HELP (Chat) -->
         <div id="view-client-help" class="view-container" style="padding-bottom: 0;">
             <div class="glass-card" style="margin-bottom: 10px; padding: 15px;">
                 <h3 style="font-family: 'Space Grotesk'; font-size: 16px; color: var(--gold); margin-bottom: 10px;"><i class="fas fa-headset"></i> Contact Support</h3>
@@ -562,20 +570,18 @@
         <div class="b-nav-item" id="bnav-help" onclick="handleNavClick('help')"><i class="fas fa-headset"></i><span>Help</span></div>
     </nav>
 
-    <!-- Action Sheet Modal -->
+    <!-- ==========================================
+         MODALS (Custom Confirms & Editing)
+         ========================================== -->
     <div id="modal-receipt-options" class="modal-overlay" onclick="closeModal('modal-receipt-options')">
-        <div class="modal-content" style="max-width: 350px; padding: 20px;" onclick="event.stopPropagation()">
-            <div class="card-header" style="margin-bottom: 20px;">
-                <h3 class="section-title" style="color: #fff;"><i class="fas fa-file-export"></i> Export Options</h3>
-                <i class="fas fa-times" style="cursor: pointer; color: var(--text-muted); font-size: 20px;" onclick="closeModal('modal-receipt-options')"></i>
-            </div>
+        <div class="modal-content" style="max-width: 350px; padding: 20px; text-align: center;" onclick="event.stopPropagation()">
+            <h3 style="color: #fff; margin-bottom: 20px; font-family: 'Space Grotesk'; font-size: 18px;"><i class="fas fa-file-export" style="color: var(--accent);"></i> Export Options</h3>
             <button class="action-sheet-btn" onclick="triggerPrint()"><i class="fas fa-print" style="color: var(--success);"></i> Print Document</button>
             <button class="action-sheet-btn" onclick="triggerPDF()"><i class="fas fa-file-pdf" style="color: var(--danger);"></i> Download PDF</button>
             <button class="action-sheet-btn" onclick="downloadReceiptImage()"><i class="fas fa-image" style="color: var(--accent);"></i> Save Image (Gallery)</button>
         </div>
     </div>
 
-    <!-- Custom Confirm Modal -->
     <div id="modal-confirm" class="modal-overlay">
         <div class="modal-content" style="max-width: 320px; text-align: center;">
             <i class="fas fa-exclamation-triangle" style="font-size: 40px; color: var(--danger); margin-bottom: 15px;"></i>
@@ -588,7 +594,6 @@
         </div>
     </div>
 
-    <!-- Instructions Modal -->
     <div id="modal-help" class="modal-overlay" onclick="closeModal('modal-help')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="card-header">
@@ -601,7 +606,6 @@
         </div>
     </div>
 
-    <!-- Admin Profile Editor Modal -->
     <div id="modal-edit-profile" class="modal-overlay" onclick="closeModal('modal-edit-profile')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="card-header">
@@ -618,47 +622,57 @@
         </div>
     </div>
 
-    <!-- ADVANCED PRINT AREA (Clean Premium Layout) -->
+    <!-- =========================================================================
+         ADVANCED A4 PRINT & PDF GENERATION ENGINE (PERFECT MATCH)
+         ========================================================================= -->
     <div id="print-area">
         <div class="print-border-wrapper">
-            
+            <div class="print-corner-tl"></div>
+            <div class="print-corner-br"></div>
+
             <!-- Header -->
             <div class="print-header">
                 <div class="print-logo"><img src="https://i.postimg.cc/52vLtJBM/1000095487-(2).png" alt="MND Logo"></div>
                 <div class="print-company-info">
-                    <h1>MAA NIRMALADJ & TENT HOUSE</h1>
-                    <p><strong>Address:</strong> Tola Beltikri, Kaddhar, Katoria, Banka Bihar (813106)</p>
-                    <p><strong>Contact:</strong> +91 7294969938, +91 8544341240</p>
-                    <p><strong>Email:</strong> maa.nirmala.dj.beltikri@gmail.com</p>
+                    <h1>MAA NIRMALA DJ & TENT HOUSE</h1>
+                    <p><i class="fas fa-map-marker-alt" style="color:#D4AF37;"></i> <strong>Address:</strong> Tola Beltikri, Kaddhar, Katoria, Banka Bihar (813106)</p>
+                    <p><i class="fas fa-phone-alt" style="color:#D4AF37;"></i> <strong>Contact:</strong> +91 7294969938, +91 8544341240</p>
+                    <p><i class="fas fa-envelope" style="color:#D4AF37;"></i> <strong>Email:</strong> maa.nirmala.dj.beltikri@gmail.com</p>
                 </div>
             </div>
             <div class="print-divider-thick"></div>
 
             <!-- Meta Information -->
             <div class="print-meta-bar">
-                <span><strong>Dispatch / Invoice ID:</strong> <span id="print-invoice-id">MND-000000</span></span>
-                <span><strong>Generated On:</strong> <span id="print-date">Date Time</span></span>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <div style="width:24px; height:24px; border-radius:50%; background:#1e3a8a; color:#fff; display:flex; justify-content:center; align-items:center;"><i class="fas fa-box"></i></div>
+                    <span>DISPATCH / INVOICE ID<br><strong id="print-invoice-id">MND-000000</strong></span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; text-align:right;">
+                    <div style="width:24px; height:24px; border-radius:50%; background:#D4AF37; color:#fff; display:flex; justify-content:center; align-items:center;"><i class="far fa-calendar-alt"></i></div>
+                    <span>GENERATED ON<br><strong id="print-date">Date Time</strong></span>
+                </div>
             </div>
 
             <!-- Client Details Grid -->
-            <div class="print-section-title">CLIENT LOGISTICS DETAILS</div>
+            <div class="print-section-wrap">
+                <div class="print-section-line"></div>
+                <div class="print-section-title">CLIENT LOGISTICS DETAILS</div>
+            </div>
+            
             <div class="print-client-grid">
-                <div class="client-col">
-                    <div class="client-field"><div class="client-icon"><i class="fas fa-user"></i></div><div class="client-text-box"><span class="label">Client Name:</span><span class="value" id="print-c-name">Name</span></div></div>
-                    <div class="client-field"><div class="client-icon"><i class="fas fa-map-marker-alt"></i></div><div class="client-text-box"><span class="label">Event Address:</span><span class="value" id="print-c-address">Address</span></div></div>
-                    <div class="client-field"><div class="client-icon"><i class="fas fa-barcode"></i></div><div class="client-text-box"><span class="label">Tracking PIN:</span><span class="value pin" id="print-c-pin">PIN</span></div></div>
-                </div>
-                <div class="client-col">
-                    <div class="client-field"><div class="client-icon"><i class="fas fa-id-card"></i></div><div class="client-text-box"><span class="label">Registration ID:</span><span class="value" id="print-c-phone">Phone</span></div></div>
-                    <div class="client-field"><div class="client-icon"><i class="fas fa-phone"></i></div><div class="client-text-box"><span class="label">Alt Contact:</span><span class="value" id="print-c-alt">N/A</span></div></div>
-                </div>
+                <div class="client-field"><div class="client-icon"><i class="fas fa-user"></i></div><div class="client-text-box"><span class="label">Client Name</span><span class="value" id="print-c-name">Name</span></div></div>
+                <div class="client-field"><div class="client-icon"><i class="fas fa-id-card"></i></div><div class="client-text-box"><span class="label">Registration ID</span><span class="value" id="print-c-phone">Phone</span></div></div>
+                <div class="client-field"><div class="client-icon"><i class="fas fa-map-marker-alt"></i></div><div class="client-text-box"><span class="label">Event Address</span><span class="value" id="print-c-address">Address</span></div></div>
+                <div class="client-field"><div class="client-icon"><i class="fas fa-phone"></i></div><div class="client-text-box"><span class="label">Alt Contact</span><span class="value" id="print-c-alt">N/A</span></div></div>
+                <div class="client-field"><div class="client-icon"><i class="fas fa-barcode"></i></div><div class="client-text-box"><span class="label">Tracking PIN</span><span class="value pin" id="print-c-pin">PIN</span></div></div>
             </div>
 
             <!-- Asset Table -->
             <div class="print-table-container">
                 <div class="print-watermark">MAA NIRMALA</div>
                 <table class="print-table-new">
-                    <thead><tr><th style="width: 15%;">SL. NO.</th><th style="width: 55%;">ASSET DESCRIPTION</th><th style="width: 30%;">QUANTITY ALLOCATED</th></tr></thead>
+                    <thead><tr><th>SL. NO.</th><th>ASSET DESCRIPTION</th><th>QUANTITY ALLOCATED</th></tr></thead>
                     <tbody id="print-table-body">
                         <!-- Rows Injected by JS -->
                     </tbody>
@@ -678,7 +692,7 @@
                 </div>
                 <div class="print-qr-container">
                     <img id="print-qr-img" src="" alt="Live Scanner">
-                    <span>Scan for Details</span>
+                    <span>Scan For<br>Details</span>
                 </div>
             </div>
 
@@ -686,12 +700,20 @@
             <div class="print-absolute-footer">
                 <div class="sys-gen-text">System Generated Document.<br>MND Premium Cloud Tracker.</div>
                 <div class="signatures">
-                    <div class="print-stamp"><div class="stamp-inner"><div class="stamp-t1">MAA NIRMALA<br>DJ</div><div class="stamp-t2">LEGAL</div><div class="stamp-t3">813106</div></div></div>
+                    <div class="print-stamp"><div class="stamp-inner"><div class="stamp-t1">MAA NIRMALA</div><div class="stamp-t2">DJ</div><div class="stamp-t2">LEGAL</div><div class="stamp-t3">813106</div></div></div>
                     <div class="print-sig-box">
                         <div class="sig-text">Sildhar Kumar</div>
                         <div class="sig-line"></div>
                         <div class="sig-title">AUTHORIZED SIGNATORY</div>
                     </div>
+                </div>
+            </div>
+            
+            <!-- Follow Banner -->
+            <div style="text-align: center; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e5e7eb; position: relative; z-index: 2;">
+                <p style="font-size: 8px; color: #4b5563; font-weight: bold; margin-bottom: 5px;"><i class="fas fa-link"></i> Follow & Connect With Us</p>
+                <div style="display: flex; justify-content: center; gap: 8px; font-size: 10px; color: #1e3a8a;">
+                    <i class="fab fa-instagram"></i> <i class="fab fa-facebook"></i> <i class="fab fa-youtube"></i> <i class="fab fa-whatsapp"></i> <i class="fab fa-linkedin"></i> <i class="fab fa-twitter"></i>
                 </div>
             </div>
         </div>
@@ -757,7 +779,10 @@
             if(id === 'view-auth') { topNav.classList.remove('visible'); bottomNav.classList.remove('visible'); } 
             else if (id === 'view-admin-assets' || id === 'view-admin-chat') { topNav.classList.remove('visible'); bottomNav.classList.add('visible'); } 
             else { topNav.classList.add('visible'); bottomNav.classList.add('visible'); }
-            window.scrollTo(0,0);
+            
+            // Scroll internal container to top
+            const activeContainer = document.getElementById(id);
+            if(activeContainer) activeContainer.scrollTop = 0;
         }
 
         function handleNavClick(tab) {
@@ -784,7 +809,6 @@
             document.getElementById('confirm-msg').innerText = msg;
             currentConfirmCallback = callback; openModal('modal-confirm');
         }
-        document.getElementById('confirm-yes-btn').addEventListener('click', () => { if(currentConfirmCallback) currentConfirmCallback(); closeModal('modal-confirm'); });
 
         // --- 4. Gatekeeper Auth System ---
         function processAuth() {
@@ -821,6 +845,13 @@
             sessionUser = null; currentRole = null; db.ref().off(); globalUsersMap = {}; currentAdminTargetPhone = ""; clientFetchedAssets = {};
             document.getElementById('login-phone').value = ''; document.getElementById('login-pin').value = '';
             switchView('view-auth'); showToast("Session Terminated Securely.");
+        }
+
+        function initiateDonation() {
+            const amount = document.getElementById('donate-amount').value;
+            if(!amount || amount <= 0) return showToast("Enter a valid donation amount.", "error");
+            window.location.href = `upi://pay?pa=9771617808@ybl&pn=Maa%20Nirmala%20DJ&am=${amount}&cu=INR&tn=Maa%20Nirmala%20DJ%20for%20donations`;
+            setTimeout(() => { document.getElementById('donate-amount').value = ''; }, 1000);
         }
 
         // --- 5. Admin Dashboard Logic ---
@@ -884,11 +915,6 @@
             });
         }
 
-        function viewAdminDonations() {
-            showToast("Global Donations feature synced from MND Pay Module.", "success");
-            // Assuming cross integration, normally we'd open a modal reading from mnd_pay_donations.
-        }
-
         // --- 6. Admin Asset Management ---
         function openAdminAssets(phone, name, pin) {
             currentAdminTargetPhone = phone; currentAdminTargetName = name; currentAdminTargetPin = pin;
@@ -928,10 +954,19 @@
 
         // --- 7. Admin Profile Editor ---
         function openEditProfile() {
-            if(!currentAdminTargetPhone) return; openModal('modal-edit-profile');
-            document.getElementById('edit-phone').value = currentAdminTargetPhone; document.getElementById('edit-name').value = currentAdminTargetName; document.getElementById('edit-pin').value = currentAdminTargetPin;
+            if(!currentAdminTargetPhone) return; 
+            
+            // Instantly load data before showing modal
+            document.getElementById('edit-phone').value = currentAdminTargetPhone; 
+            document.getElementById('edit-name').value = currentAdminTargetName; 
+            document.getElementById('edit-pin').value = currentAdminTargetPin;
             const userObj = globalUsersMap[currentAdminTargetPhone];
-            if(userObj) { document.getElementById('edit-address').value = userObj.address || ''; document.getElementById('edit-alt-phone').value = userObj.altPhone || ''; document.getElementById('edit-email').value = userObj.email || ''; }
+            if(userObj) { 
+                document.getElementById('edit-address').value = userObj.address || ''; 
+                document.getElementById('edit-alt-phone').value = userObj.altPhone || ''; 
+                document.getElementById('edit-email').value = userObj.email || ''; 
+            }
+            openModal('modal-edit-profile');
         }
 
         function saveUserProfile() {
@@ -982,14 +1017,6 @@
                     }); area.innerHTML = html; area.scrollTop = area.scrollHeight;
                 } else { area.innerHTML = '<div style="text-align:center; color:#555; font-size:12px;">Start chat with HQ.</div>'; }
             });
-        }
-
-        // Donate functionality
-        function initiateDonation() {
-            const amount = document.getElementById('donate-amount').value;
-            if(!amount || amount <= 0) return showToast("Enter a valid donation amount.", "error");
-            window.location.href = `upi://pay?pa=9771617808@ybl&pn=Maa%20Nirmala%20DJ&am=${amount}&cu=INR&tn=Maa%20Nirmala%20DJ%20for%20donations`;
-            setTimeout(() => { document.getElementById('donate-amount').value = ''; }, 1000);
         }
 
         // --- 9. Chat System (Admin & Client) ---
@@ -1067,7 +1094,6 @@
             const dDate = new Date(); const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
             const currentDateTime = `${days[dDate.getDay()]}, ${dDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} at ${dDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}`;
 
-            // Populate Fields
             document.getElementById('print-invoice-id').innerText = dispatchId;
             document.getElementById('print-date').innerText = currentDateTime;
             document.getElementById('print-c-name').innerText = escapeHTML(name);
@@ -1076,21 +1102,20 @@
             document.getElementById('print-c-pin').innerText = escapeHTML(pin);
             document.getElementById('print-c-alt').innerText = escapeHTML(altPhone);
 
-            // Populate Table
             let tableRows = ''; let slNo = 1;
             let assetStrForQR = '';
             for (const key in items) {
                 if (items[key] > 0 && ASSET_CONFIG[key]) {
                     tableRows += `<tr><td>${slNo}</td><td><div class="asset-desc-flex"><div class="asset-table-icon"><i class="fas ${ASSET_CONFIG[key].icon}"></i></div><strong>${ASSET_CONFIG[key].name}</strong></div></td><td>${items[key]}</td></tr>`;
-                    assetStrForQR += `${ASSET_CONFIG[key].name} - ${items[key]} | `;
+                    assetStrForQR += `${ASSET_CONFIG[key].name}: ${items[key]} | `;
                     slNo++;
                 }
             }
             document.getElementById('print-table-body').innerHTML = tableRows;
 
-            // Generate Smart QR Code containing specific User details and their exact rented goods
-            const qrData = encodeURIComponent(`Name: ${name}\nNumber: ${phone}\nAddress: ${address}\nPIN: ${pin}\nAssets Allocated:\n${assetStrForQR}`);
-            document.getElementById('print-qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${qrData}&color=0f1f38`;
+            // Generate Smart QR Code
+            const qrData = `MND Logistics\nName: ${name}\nReg ID: ${phone}\nPIN: ${pin}\nAssets: ${assetStrForQR}`;
+            document.getElementById('print-qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}&color=111827`;
 
             return true;
         }
